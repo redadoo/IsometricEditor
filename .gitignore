@@ -1,5 +1,16 @@
-# Prerequisites
-*.d
+# CMake generated files
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+CTestTestfile.cmake
+Makefile
+cmake_install.cmake
+install_manifest.txt
+
+# Build directories
+build/
+bin/
+*.dSYM/
 
 # Compiled Object files
 *.slo
@@ -30,3 +41,14 @@
 *.exe
 *.out
 *.app
+
+# IDE and editor files
+.idea/
+.vscode/
+*.sublime-workspace
+*.sublime-project
+*.vs/
+
+# System files
+.DS_Store
+Thumbs.db
