@@ -7,10 +7,15 @@ MapManager::~MapManager() {}
 void MapManager::init(const char *pathMap, int screenWidth)
 {
 	this->screenWidth = screenWidth;
-    this->offset = { static_cast<float>(this->screenWidth / 2), 100 };
+	this->offset = { static_cast<float>(this->screenWidth / 2), 100 };
 
 	if (pathMap != nullptr)
 		this->map = deserializeMap(pathMap);
+	else 
+		this->map = Map();
+
+	this->gridCellWidth = this->map.tileWidth;
+	this->gridCellHeight = this->map.tileHeight / 2;
 }
 
 void MapManager::serializeMap()
@@ -78,25 +83,25 @@ void MapManager::serializeMap()
 
 Map MapManager::deserializeMap(const char *pathMap)
 {
-    std::ifstream file(pathMap);
-    if (!file.is_open()) 
-        throw std::runtime_error("Cannot open map file");
+	std::ifstream file(pathMap);
+	if (!file.is_open()) 
+		throw std::runtime_error("Cannot open map file");
 
-    nlohmann::json j;
-    file >> j;
+	nlohmann::json j;
+	file >> j;
 
-    auto m = j["map"];
+	auto m = j["map"];
 
-    Map newMap;
-    newMap.width      = m["width"].get<int>();
-    newMap.height     = m["height"].get<int>();
-    newMap.tileWidth  = m["tilewidth"].get<int>();
-    newMap.tileHeight = m["tileheight"].get<int>();
+	Map newMap;
+	newMap.width      = m["width"].get<int>();
+	newMap.height     = m["height"].get<int>();
+	newMap.tileWidth  = m["tilewidth"].get<int>();
+	newMap.tileHeight = m["tileheight"].get<int>();
 
-    std::string tileSheetSource = m["tilesets"][0]["source"].get<std::string>();
-    loadTexture("atlas", tileSheetSource.c_str(), true);
+	std::string tileSheetSource = m["tilesets"][0]["source"].get<std::string>();
+	loadTexture("atlas", tileSheetSource.c_str(), newMap.tileWidth, newMap.tileHeight);
 
-    for (auto& layerJson : m["layers"]) 
+	for (auto& layerJson : m["layers"]) 
 	{
 		MapLayer layer;
 		layer.id = layerJson["id"].get<int>();
@@ -126,12 +131,28 @@ Map MapManager::deserializeMap(const char *pathMap)
 		newMap.layers.push_back(layer);
 	}
 
-    return newMap;
+	return newMap;
+}
+
+void MapManager::loadTexture(const char *key, const char *path, int tileWidth, int tileHeight)
+{
+	Image spriteImage = LoadImage(path);
+	if (spriteImage.data != NULL)
+	{
+		Texture2D sprite = LoadTextureFromImage(spriteImage);
+		UnloadImage(spriteImage); 
+		spriteSheet.texture = sprite;
+		spriteSheet.sizeX = spriteImage.width / tileWidth;
+		spriteSheet.sizeY = spriteImage.height / tileHeight;
+	}
+	else
+		std::cout << "error\n" ;
 }
 
 void MapManager::draw()
 {
-    Vector2 mousePos = GetMousePosition();
+	Vector2 mousePos = GetMousePosition();
+	int offSet = map.tileHeight / 2; 
 
 	for (size_t layerIndex = 0; layerIndex < map.layers.size(); ++layerIndex)
 	{
@@ -139,16 +160,17 @@ void MapManager::draw()
 		{
 			for (int col = 0; col < this->map.width; col++)
 			{
-				float x = (col - row) * gridCellWidth / 2.0f + offset.x;
-				float y = (col + row) * gridCellHeight / 2.0f + offset.y;
-
+				
+				float x = (col - row) * (gridCellWidth / 2.0f) + offset.x;
+				float y = (col + row) * (gridCellHeight / 2.0f) + offset.y;
+				
 				if (layerIndex == 0)
 					this->drawGrid(mousePos, row, col, x, y);
 
-				this->tilesSpriteSheet[0].drawSprite(
-					map.layers[layerIndex].tiles[row][col], 
-					x, 
-					y
+				this->spriteSheet.drawSprite(
+					map.layers[layerIndex].tiles[row][col],
+					x - offSet, 
+					y - offSet
 				);
 			}
 		}
@@ -174,36 +196,14 @@ void MapManager::drawGrid(Vector2 mousePos, int row, int col, float x, float y)
 	}
 }
 
-void MapManager::loadTexture(const char *key, const char *path, bool isSpriteSheet)
+void SpriteSheet::drawSprite(const Tile& tile, float posX, float posY)
 {
-	Image spriteImage = LoadImage(path);
-	if (spriteImage.data != NULL)
-	{
-		Texture2D sprite = LoadTextureFromImage(spriteImage);
-		UnloadImage(spriteImage); 
-		SpriteSheet spriteSheet;
-		spriteSheet.texture = sprite;
-
-		tilesSpriteSheet.insert( {0, spriteSheet} );
-	}
-	else
-		std::cout << "error\n" ;
-}
-
-void SpriteSheet::drawSprite(Rectangle rec, Vector2 pos)
-{
-	DrawTextureRec(this->texture, rec, pos, WHITE);
-}
-
-void SpriteSheet::drawSprite(const Tile& tile, int isoX, int isoY)
-{
-    int columns = 11;
-    int tileIndex = tile.id - 1; 
-    int col = tileIndex % columns;
-    int row = tileIndex / columns;
-    int x = col * 32;
-    int y = row * 32;
-    Rectangle rec = { static_cast<float>(x), static_cast<float>(y), 32, 32 };
-    DrawTextureRec(this->texture, rec, { static_cast<float>(isoX), static_cast<float>(isoY) }, WHITE);
+	int tileIndex = tile.id - 1; 
+	int tileSpritecol = tileIndex % sizeX;
+	int tileSpriterow = tileIndex / sizeY;
+	float y = tileSpriterow * 32;
+	float x = tileSpritecol * 32;
+	Rectangle rec = { x, y, 32, 32 };
+	DrawTextureRec(this->texture, rec, {posX, posY}, WHITE);
 }
 

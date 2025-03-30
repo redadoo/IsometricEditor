@@ -1,11 +1,12 @@
 #include "raylib.h"
-#include "vector"
-#include "map"
-#include "string"
+#include <vector>
+#include <map>
+#include <string>
 #include <iostream>
 #include <nlohmann/json.hpp>
 #include <fstream>
 #include <cmath>
+
 struct Tile 
 {
     int id;
@@ -30,32 +31,33 @@ struct Map
 
 struct SpriteSheet
 {
+	int sizeX = 1;
+	int sizeY = 1;
+
 	int tileWidth;
     int tileHeight;
 	Texture2D texture;
 
-	void drawSprite(Rectangle rec, Vector2 pos);
-	void drawSprite(const Tile& tile, int isoX, int isoY);
+	void drawSprite(const Tile& tile, float posX, float posY);
 };
 
 class MapManager
 {
 private:
-	std::map<int, SpriteSheet> tilesSpriteSheet;
-	const int gridCellWidth = 32;
-	const int gridCellHeight = 16;
-	int screenWidth;
 	Vector2 offset;
+	int screenWidth;
+	int gridCellWidth;
+	int gridCellHeight;
+	SpriteSheet spriteSheet;
 	
 	void serializeMap();
 	Map deserializeMap(const char *pathMap);
 	void drawGrid(Vector2 mousePos, int row, int col, float x, float y);
-	void loadTexture(const char* key, const char* path, bool isSpriteSheet);
-	nlohmann::json generateTilesetJson(const char* spritesheetPath, int tileWidth, int tileHeight);
-	void initMap(const char* pathMap = nullptr);
+	void loadTexture(const char* key, const char* path, int tileWidth, int tileHeight);
 	
 public:
 	Map map;
+	
 	void init(const char *pathMap, int screenWidth);
 	void draw();
 
