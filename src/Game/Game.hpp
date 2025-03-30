@@ -3,6 +3,7 @@
 #include "math.h"
 #include "stdio.h"
 #include "MapManager.hpp"
+#include "Gui.hpp"
 
 class Game
 {
@@ -11,7 +12,8 @@ private:
 	const int screenHeight = 720;
 	MapManager mapManager;
 	Camera2D camera;
-
+	Gui gui;
+	
 public:
 	void init();
 	void loop();

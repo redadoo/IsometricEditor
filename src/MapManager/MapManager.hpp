@@ -4,41 +4,54 @@
 #include "string"
 #include <iostream>
 #include <nlohmann/json.hpp>
+#include <fstream>
 
-struct Tile
+struct Tile 
 {
     int id;
-    int tileHeight;
-    int tileWidth;
-    Texture2D sprite;
+    int textureId; 
 };
 
 struct MapLayer 
 {
     int id;
-    std::vector<Tile> mapLayer;
+    std::vector<std::vector<Tile>> tiles;
 };
 
-struct Map
+struct Map 
 {
-    int ySize;
-    int xSize;
+    int width;
+    int height;
+    int tileWidth;
+    int tileHeight;
+    std::vector<MapLayer> layers;
+};
 
-    std::vector<MapLayer> mapMatrix;
+struct SpriteSheet
+{
+	int tileWidth;
+    int tileHeight;
+	Texture2D texture;
+
+	void drawSprite(Rectangle rec, Vector2 pos);
+	void drawSprite(const Tile& tile, int isoX, int isoY);
 };
 
 class MapManager
 {
 private:
-    std::map<const char*, Texture2D> tilesSprite;
-    std::map<const char*, Texture2D> tilesSpriteSheet;
-    Map map;
-
+	std::map<int, Texture2D> tilesSprite;
+	std::map<int, SpriteSheet> tilesSpriteSheet;
+	
+	void serializeMap();
+	Map deSerializeMap(const char *pathMap);
+	
 public:
-    void loadTexture(const char* key, const char* path, bool isSpriteSheet);
-    void initMap(const char* pathMap = nullptr);
-    void drawMap();
-
-    MapManager();
-    ~MapManager();
+	Map map;
+	void loadTexture(const char* key, const char* path, bool isSpriteSheet);
+	nlohmann::json generateTilesetJson(const char* spritesheetPath, int tileWidth, int tileHeight);
+	void initMap(const char* pathMap = nullptr);
+	void drawMap();
+	MapManager();
+	~MapManager();
 };

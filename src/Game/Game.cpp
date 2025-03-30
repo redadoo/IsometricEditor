@@ -2,16 +2,11 @@
 
 void Game::init()
 {
-	
 	InitWindow(this->screenWidth, this->screenHeight, "IsometricTest");
 	
 	this->mapManager = MapManager();
+	this->mapManager.initMap("assets/map/map.json");
 
-	this->mapManager.loadTexture("atlas", "assets/tile/spritesheet.png", true);
-	// this->mapManager.loadTexture("dirt", "assets/tile/dirt_0.png", false);
-
-	this->mapManager.initMap("assets/map/test.json");
-	
 	SetTargetFPS(60);
 
 	this->camera = 
@@ -27,28 +22,34 @@ void Game::loop()
 {
 	while (!WindowShouldClose()) 
 	{
-		
-		// if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) 
-		// {
-		// 	Vector2 mouseWorldPos = GetScreenToWorld2D(GetMousePosition(), camera);
-		// 	camera.offset = GetMousePosition();
-		// 	camera.target = mouseWorldPos;
-		// }
-		// if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) 
-		// {
-		// 	float deltaX = GetMouseDelta().x;
-		// 	float scaleFactor = 1.0f + (0.01f * fabsf(deltaX));
-		// 	if (deltaX < 0) scaleFactor = 1.0f / scaleFactor;
-		// 	camera.zoom = Clamp(camera.zoom * scaleFactor, 0.125f, 64.0f);
-		// }
+		float wheel = GetMouseWheelMove();
+		if (IsMouseButtonDown(MOUSE_BUTTON_LEFT))
+        {
+            Vector2 delta = GetMouseDelta();
+            delta = Vector2Scale(delta, -1.0f/camera.zoom);
+            camera.target = Vector2Add(camera.target, delta);
+        }
+		if (wheel != 0)
+		{
+			Vector2 mouseWorldPos = GetScreenToWorld2D(GetMousePosition(), camera);
+			camera.offset = GetMousePosition();
+			camera.target = mouseWorldPos;
+
+			float scaleFactor = 1.0f + (0.25f*fabsf(wheel));
+			if (wheel < 0) 
+				scaleFactor = 1.0f/scaleFactor;
+			camera.zoom = Clamp(camera.zoom*scaleFactor, 0.125f, 64.0f);
+		}
 		
 		BeginDrawing();
 		ClearBackground(WHITE);
-		BeginMode2D(camera);
-
+		
+		gui.draw();
+		
+		BeginMode2D(this->camera);
 		this->mapManager.drawMap();
-
 		EndMode2D();
+
 		EndDrawing();
 	}
 	CloseWindow();
