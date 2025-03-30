@@ -1,11 +1,7 @@
 #include "Game.hpp"
 
-int main(void) 
+int main() 
 {
-	Game game = Game();
-	
-	game.init();
-	game.loop();
-	
-	return 0;
+    Game game;
+    game.run();
 }

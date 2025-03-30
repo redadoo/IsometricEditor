@@ -14,9 +14,9 @@ private:
 	Camera2D camera;
 	Gui gui;
 	
+	void manageCamera();
 public:
-	void init();
-	void loop();
+	void run();
 
 	Game();
 	~Game();

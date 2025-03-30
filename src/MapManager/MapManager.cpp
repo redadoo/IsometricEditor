@@ -1,19 +1,16 @@
 #include "MapManager.hpp"
 
-MapManager::MapManager()
-{
-	this->tilesSprite = std::map<int, Texture2D>();
-}
+MapManager::MapManager() {}
 
-MapManager::~MapManager()
-{
-	serializeMap();
-}
+MapManager::~MapManager() {}
 
-void MapManager::initMap(const char *pathMap)
+void MapManager::init(const char *pathMap, int screenWidth)
 {
+	this->screenWidth = screenWidth;
+    this->offset = { static_cast<float>(this->screenWidth / 2), 100 };
+
 	if (pathMap != nullptr)
-		this->map = deSerializeMap(pathMap);
+		this->map = deserializeMap(pathMap);
 }
 
 void MapManager::serializeMap()
@@ -79,7 +76,7 @@ void MapManager::serializeMap()
 	outFile.close();
 }
 
-Map MapManager::deSerializeMap(const char *pathMap)
+Map MapManager::deserializeMap(const char *pathMap)
 {
     std::ifstream file(pathMap);
     if (!file.is_open()) 
@@ -96,7 +93,6 @@ Map MapManager::deSerializeMap(const char *pathMap)
     newMap.tileWidth  = m["tilewidth"].get<int>();
     newMap.tileHeight = m["tileheight"].get<int>();
 
-    // Load the tileset texture
     std::string tileSheetSource = m["tilesets"][0]["source"].get<std::string>();
     loadTexture("atlas", tileSheetSource.c_str(), true);
 
@@ -105,10 +101,9 @@ Map MapManager::deSerializeMap(const char *pathMap)
 		MapLayer layer;
 		layer.id = layerJson["id"].get<int>();
 		
-		// Check if 'data' is a 2D array
 		const auto& data = layerJson["data"];
-		
 		size_t rowCount = data.size();
+
 		if (rowCount > 0)
 		{
 			size_t colCount = data[0].size();
@@ -134,6 +129,51 @@ Map MapManager::deSerializeMap(const char *pathMap)
     return newMap;
 }
 
+void MapManager::draw()
+{
+    Vector2 mousePos = GetMousePosition();
+
+	for (size_t layerIndex = 0; layerIndex < map.layers.size(); ++layerIndex)
+	{
+		for (int row = 0; row < this->map.height; row++)
+		{
+			for (int col = 0; col < this->map.width; col++)
+			{
+				float x = (col - row) * gridCellWidth / 2.0f + offset.x;
+				float y = (col + row) * gridCellHeight / 2.0f + offset.y;
+
+				if (layerIndex == 0)
+					this->drawGrid(mousePos, row, col, x, y);
+
+				this->tilesSpriteSheet[0].drawSprite(
+					map.layers[layerIndex].tiles[row][col], 
+					x, 
+					y
+				);
+			}
+		}
+	}
+}
+
+void MapManager::drawGrid(Vector2 mousePos, int row, int col, float x, float y)
+{
+	Vector2 top    = { x, y };
+	Vector2 right  = { x + gridCellWidth / 2.0f, y + gridCellHeight / 2.0f };
+	Vector2 bottom = { x, y + gridCellHeight };
+	Vector2 left   = { x - gridCellWidth / 2.0f, y + gridCellHeight / 2.0f };
+
+	DrawLineV(top, right, BLACK);
+	DrawLineV(right, bottom, BLACK);
+	DrawLineV(bottom, left, BLACK);
+	DrawLineV(left, top, BLACK);
+
+	if (false)
+	{
+		DrawTriangle(right, top, bottom, RED);
+		DrawTriangle(left, bottom, top, RED);
+	}
+}
+
 void MapManager::loadTexture(const char *key, const char *path, bool isSpriteSheet)
 {
 	Image spriteImage = LoadImage(path);
@@ -150,27 +190,6 @@ void MapManager::loadTexture(const char *key, const char *path, bool isSpriteShe
 		std::cout << "error\n" ;
 }
 
-void MapManager::drawMap()
-{
-	for (size_t layerIndex = 0; layerIndex < map.layers.size(); ++layerIndex) 
-	{
-		const auto& layer = map.layers[layerIndex];
-		for (int i = 0; i < this->map.width; i++) 
-		{
-			for (int j = 0; j < this->map.height; j++) 
-			{
-				Tile tile = layer.tiles[i][j];
-				SpriteSheet sprite = this->tilesSpriteSheet[0];
-				
-				int isoX = (i - j) * (map.tileWidth / 2.5f);
-				int isoY = (i + j) * (map.tileHeight / 2.5f);
-
-				sprite.drawSprite(tile, isoX, isoY);
-			}
-		}
-	}
-}
-
 void SpriteSheet::drawSprite(Rectangle rec, Vector2 pos)
 {
 	DrawTextureRec(this->texture, rec, pos, WHITE);
@@ -178,8 +197,13 @@ void SpriteSheet::drawSprite(Rectangle rec, Vector2 pos)
 
 void SpriteSheet::drawSprite(const Tile& tile, int isoX, int isoY)
 {
-	int x = tile.id * 32;
-	int y = ((int)tile.id / 10) * 32;
-	Rectangle rec = { x, y, 32, 32 };
-	DrawTextureRec(this->texture, rec, {isoX, isoY}, WHITE);
+    int columns = 11;
+    int tileIndex = tile.id - 1; 
+    int col = tileIndex % columns;
+    int row = tileIndex / columns;
+    int x = col * 32;
+    int y = row * 32;
+    Rectangle rec = { static_cast<float>(x), static_cast<float>(y), 32, 32 };
+    DrawTextureRec(this->texture, rec, { static_cast<float>(isoX), static_cast<float>(isoY) }, WHITE);
 }
+

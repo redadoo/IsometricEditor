@@ -5,11 +5,12 @@
 #include <iostream>
 #include <nlohmann/json.hpp>
 #include <fstream>
-
+#include <cmath>
 struct Tile 
 {
     int id;
-    int textureId; 
+    int textureId;
+	Vector2 pos;
 };
 
 struct MapLayer 
@@ -40,18 +41,24 @@ struct SpriteSheet
 class MapManager
 {
 private:
-	std::map<int, Texture2D> tilesSprite;
 	std::map<int, SpriteSheet> tilesSpriteSheet;
+	const int gridCellWidth = 32;
+	const int gridCellHeight = 16;
+	int screenWidth;
+	Vector2 offset;
 	
 	void serializeMap();
-	Map deSerializeMap(const char *pathMap);
-	
-public:
-	Map map;
+	Map deserializeMap(const char *pathMap);
+	void drawGrid(Vector2 mousePos, int row, int col, float x, float y);
 	void loadTexture(const char* key, const char* path, bool isSpriteSheet);
 	nlohmann::json generateTilesetJson(const char* spritesheetPath, int tileWidth, int tileHeight);
 	void initMap(const char* pathMap = nullptr);
-	void drawMap();
+	
+public:
+	Map map;
+	void init(const char *pathMap, int screenWidth);
+	void draw();
+
 	MapManager();
 	~MapManager();
 };
