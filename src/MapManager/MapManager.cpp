@@ -199,6 +199,9 @@ void MapManager::drawGrid(Vector2 mousePos, int row, int col, float x, float y)
 void SpriteSheet::drawSprite(const Tile& tile, float posX, float posY)
 {
 	int tileIndex = tile.id - 1; 
+	if (tileIndex < 0)
+		return;
+		
 	int tileSpritecol = tileIndex % sizeX;
 	int tileSpriterow = tileIndex / sizeY;
 	float y = tileSpriterow * 32;
