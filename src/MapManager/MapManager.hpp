@@ -40,7 +40,6 @@ private:
     void setEmptyMap(const char *spriteSheetPath);
     void deserializeMap(const char *pathMap);
     void drawGrid(Vector2 mousePos, int row, int col, float x, float y);
-	void loadTexture(const char* key, const char* path, int tileWidth, int tileHeight);
 	
 public:
 	Map map;
