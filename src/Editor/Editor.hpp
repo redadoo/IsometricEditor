@@ -16,9 +16,9 @@ enum class EditorState { MAIN_MENU, SEARCH_MAP_PATH, MAP_EDITOR };
  * @brief Structure for handling text input for map paths.
  */
 struct InputText {
-	Rectangle labelRec;                   ///< Rectangle for the label.
-	Rectangle textBoxRec;                 ///< Rectangle for the text box.
-	char path[256] = "assets/map/map2.json";///< Default map path.
+	Rectangle labelRec;
+	Rectangle textBoxRec;
+	char path[256] = "assets/map/map2.json";
 };
 
 /**
