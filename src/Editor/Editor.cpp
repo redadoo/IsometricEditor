@@ -6,7 +6,7 @@
 
 Editor::Editor() : isMapInit(false)
 {
-	guiSection = GuiSection::MAIN_MENU;
+	guiSection = EditorState::MAIN_MENU;
 
 	InitWindow(screenWidth, screenHeight, "IsometricEditorTest");
 	SetTargetFPS(60);
@@ -46,7 +46,6 @@ void Editor::manageCamera(Vector2 mousePos)
 {
 	float wheel = GetMouseWheelMove();
 
-	// Handle camera movement with left mouse drag
 	if (IsMouseButtonDown(MOUSE_BUTTON_LEFT))
 	{
 		Vector2 delta = GetMouseDelta();
@@ -69,10 +68,10 @@ void Editor::manageCamera(Vector2 mousePos)
 void Editor::drawMainMenu()
 {
 	if (GuiButton(guiElements[0], "new map"))
-		guiSection = GuiSection::MAP_EDITOR;
+		guiSection = EditorState::MAP_EDITOR;
 
 	if (GuiButton(guiElements[1], "Load Map"))
-		guiSection = GuiSection::SEARCH_MAP_PATH;
+		guiSection = EditorState::SEARCH_MAP_PATH;
 }
 
 void Editor::drawInputPath()
@@ -81,7 +80,7 @@ void Editor::drawInputPath()
 	if (GuiTextBox(inputText.textBoxRec, inputText.path, sizeof(inputText.path), true))
 	{
 		if (std::filesystem::exists(std::filesystem::path(inputText.path)))
-			guiSection = GuiSection::MAP_EDITOR;
+			guiSection = EditorState::MAP_EDITOR;
 	}
 }
 
@@ -92,20 +91,20 @@ void Editor::drawMapGui()
 	for (size_t i = 0; i < 10; i++) {}
 }
 
-void Editor::drawGui()
+void Editor::ManageGui()
 {
 	if (GuiButton(guiElements[2], "Back to Main menu"))
-		guiSection = GuiSection::MAIN_MENU;
+		guiSection = EditorState::MAIN_MENU;
 
 	switch (guiSection)
 	{
-	case GuiSection::MAIN_MENU:
+	case EditorState::MAIN_MENU:
 		drawMainMenu();
 		break;
-	case GuiSection::SEARCH_MAP_PATH:
+	case EditorState::SEARCH_MAP_PATH:
 		drawInputPath();
 		break;
-	case GuiSection::MAP_EDITOR:
+	case EditorState::MAP_EDITOR:
 		drawMapGui();
 		break;
 	default:
@@ -117,7 +116,7 @@ void Editor::run()
 {
 	while (!WindowShouldClose())
 	{
-		if (!isMapInit && guiSection == GuiSection::MAP_EDITOR)
+		if (!isMapInit && guiSection == EditorState::MAP_EDITOR)
 		{
 			mapManager.init(inputText.path, screenWidth);
 			isMapInit = true;
@@ -133,7 +132,7 @@ void Editor::run()
 		mapManager.draw(mousePos);
 		EndMode2D();
 
-		drawGui();
+		ManageGui();
 		EndDrawing();
 	}
 	CloseWindow();
