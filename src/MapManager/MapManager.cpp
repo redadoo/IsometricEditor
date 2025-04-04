@@ -4,11 +4,16 @@ MapManager::MapManager() {}
 
 MapManager::~MapManager() {}
 
-void MapManager::init(const char *pathMap, int screenWidth)
+void MapManager::LoadMap(const char *pathMap, int screenWidth)
 {
-	if (pathMap != nullptr)
-		this->map = deserializeMap(pathMap);
+	deserializeMap(pathMap);
+	this->gridCellWidth = this->map.tileWidth;
+	this->gridCellHeight = this->map.tileHeight / 2;
+}
 
+void MapManager::newMap(const char *spriteSheetPath, int screenWidth)
+{
+	setEmptyMap(spriteSheetPath);
 	this->gridCellWidth = this->map.tileWidth;
 	this->gridCellHeight = this->map.tileHeight / 2;
 }
@@ -76,7 +81,33 @@ void MapManager::serializeMap()
 	outFile.close();
 }
 
-Map MapManager::deserializeMap(const char *pathMap)
+void MapManager::setEmptyMap(const char *spriteSheetPath)
+{
+	this->map.width = 30;
+	this->map.height = 30;
+	this->map.tileWidth = 32;
+	this->map.tileHeight = 32;
+	this->spriteSheet.init(spriteSheetPath, this->map.tileWidth, this->map.tileHeight);
+
+	MapLayer layer;
+	layer.id = 0;
+	for (size_t row = 0; row < this->map.width; ++row)
+	{
+		std::vector<Tile> rowTiles;
+
+		for (size_t col = 0; col < this->map.height; ++col)
+		{
+			Tile tile;
+			tile.id = 0;
+			rowTiles.push_back(tile);
+		}
+		
+		layer.tiles.push_back(rowTiles);
+	}
+	this->map.layers.push_back(layer);
+}
+
+void MapManager::deserializeMap(const char *pathMap)
 {
 	std::ifstream file(pathMap);
 	if (!file.is_open()) 
@@ -87,14 +118,13 @@ Map MapManager::deserializeMap(const char *pathMap)
 
 	auto m = j["map"];
 
-	Map newMap;
-	newMap.width      = m["width"].get<int>();
-	newMap.height     = m["height"].get<int>();
-	newMap.tileWidth  = m["tilewidth"].get<int>();
-	newMap.tileHeight = m["tileheight"].get<int>();
+	this->map.width = m["width"].get<int>();
+	this->map.height = m["height"].get<int>();
+	this->map.tileWidth = m["tilewidth"].get<int>();
+	this->map.tileHeight = m["tileheight"].get<int>();
 
 	std::string tileSheetSource = m["tilesets"][0]["source"].get<std::string>();
-	this->spriteSheet.init(tileSheetSource.c_str(), newMap.tileWidth, newMap.tileHeight);
+	this->spriteSheet.init(tileSheetSource.c_str(), this->map.tileWidth, this->map.tileHeight);
 
 	for (auto& layerJson : m["layers"]) 
 	{
@@ -122,10 +152,8 @@ Map MapManager::deserializeMap(const char *pathMap)
 				layer.tiles.push_back(rowTiles);
 			}
 		}
-		newMap.layers.push_back(layer);
+		this->map.layers.push_back(layer);
 	}
-
-	return newMap;
 }
 
 void MapManager::draw(Vector2 mousePos)
@@ -161,7 +189,7 @@ void MapManager::drawGrid(Vector2 mousePos, int row, int col, float x, float y)
 	DrawLineV(bottom, left, BLACK);
 	DrawLineV(left, top, BLACK);
 
-	if (true)
+	if (false)
 	{
 		DrawTriangle(right, top, bottom, RED);
 		DrawTriangle(left, bottom, top, RED);

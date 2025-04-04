@@ -10,21 +10,24 @@
 /**
  * @brief Enumeration for the different GUI state.
  */
-enum class EditorState { MAIN_MENU, SEARCH_MAP_PATH, MAP_EDITOR };
+enum class EditorState { MAIN_MENU, CREATE_MAP, SEARCH_MAP_PATH, MAP_EDITOR };
 
 /**
  * @brief Structure for handling text input for map paths.
  */
-struct InputText {
+struct InputText 
+{
+	char text[256] = "";
 	Rectangle labelRec;
 	Rectangle textBoxRec;
-	char path[256] = "assets/map/map2.json";
 };
+
 
 /**
  * @brief Editor class manages the application state and rendering.
  */
-class Editor {
+class Editor 
+{
 public:
 	Editor();
 	~Editor();
@@ -37,13 +40,15 @@ public:
 private:
 	static constexpr float screenWidth = 1280.0f;
 	static constexpr float screenHeight = 720.0f;
-
-	EditorState guiSection;
-	InputText inputText;
+	
 	bool isMapInit = false;
-	std::array<Rectangle, 4> guiElements;
-	MapManager mapManager;
+
+	InputText inputText;
+	EditorState guiSection;
+
 	Camera2D camera;
+	MapManager mapManager;
+	std::array<Rectangle, 4> guiElements;
 
 	/**
 	 * @brief Initializes the camera settings.
@@ -76,6 +81,7 @@ private:
 	 */
 	void drawInputPath();
 
+	void drawNewMapForm();
 	/**
 	 * @brief Draws the GUI for the map editor.
 	 */

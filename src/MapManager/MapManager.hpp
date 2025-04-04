@@ -37,8 +37,9 @@ private:
 	SpriteSheet spriteSheet;
 
 	void serializeMap();
-	Map deserializeMap(const char *pathMap);
-	void drawGrid(Vector2 mousePos, int row, int col, float x, float y);
+    void setEmptyMap(const char *spriteSheetPath);
+    void deserializeMap(const char *pathMap);
+    void drawGrid(Vector2 mousePos, int row, int col, float x, float y);
 	void loadTexture(const char* key, const char* path, int tileWidth, int tileHeight);
 	
 public:
@@ -49,4 +50,6 @@ public:
 
 	MapManager();
 	~MapManager();
+    void LoadMap(const char *pathMap, int screenWidth);
+    void newMap(const char *pathMap, int screenWidth);
 };

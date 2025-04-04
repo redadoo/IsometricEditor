@@ -40,6 +40,7 @@ void Editor::InitGuiElements()
 
 	inputText.labelRec   = { buttonX, screenHeight * 0.3f - 20, buttonWidth, 20 };
 	inputText.textBoxRec = { buttonX, screenHeight * 0.3f, buttonWidth, buttonHeight };
+
 }
 
 void Editor::manageCamera(Vector2 mousePos)
@@ -68,7 +69,7 @@ void Editor::manageCamera(Vector2 mousePos)
 void Editor::drawMainMenu()
 {
 	if (GuiButton(guiElements[0], "new map"))
-		guiSection = EditorState::MAP_EDITOR;
+		guiSection = EditorState::CREATE_MAP;
 
 	if (GuiButton(guiElements[1], "Load Map"))
 		guiSection = EditorState::SEARCH_MAP_PATH;
@@ -77,10 +78,27 @@ void Editor::drawMainMenu()
 void Editor::drawInputPath()
 {
 	GuiLabel(inputText.labelRec, "Insert map path:");
-	if (GuiTextBox(inputText.textBoxRec, inputText.path, sizeof(inputText.path), true))
+	if (GuiTextBox(inputText.textBoxRec, inputText.text, sizeof(inputText.text), true))
 	{
-		if (std::filesystem::exists(std::filesystem::path(inputText.path)))
+		if (std::filesystem::exists(std::filesystem::path(inputText.text)))
+		{
+			mapManager.LoadMap(inputText.text, screenWidth);
 			guiSection = EditorState::MAP_EDITOR;
+		}
+	}
+
+}
+
+void Editor::drawNewMapForm()
+{
+	GuiLabel(inputText.labelRec, "Insert spriteSheet path:");
+	if (GuiTextBox(inputText.textBoxRec, inputText.text, sizeof(inputText.text), true))
+	{
+		if (std::filesystem::exists(std::filesystem::path(inputText.text)))
+		{
+			mapManager.newMap(inputText.text, screenWidth);
+			guiSection = EditorState::MAP_EDITOR;
+		}
 	}
 }
 
@@ -101,6 +119,9 @@ void Editor::ManageGui()
 	case EditorState::MAIN_MENU:
 		drawMainMenu();
 		break;
+	case EditorState::CREATE_MAP:
+		drawNewMapForm();
+		break;
 	case EditorState::SEARCH_MAP_PATH:
 		drawInputPath();
 		break;
@@ -116,12 +137,6 @@ void Editor::run()
 {
 	while (!WindowShouldClose())
 	{
-		if (!isMapInit && guiSection == EditorState::MAP_EDITOR)
-		{
-			mapManager.init(inputText.path, screenWidth);
-			isMapInit = true;
-		}
-
 		Vector2 mousePos = GetMousePosition();
 		manageCamera(mousePos);
 
