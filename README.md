@@ -1,9 +1,9 @@
 # Isometric
 
-![Repo Size](https://img.shields.io/github/repo-size/redadoo/Isometric)
-![Contributors](https://img.shields.io/github/contributors/redadoo/Isometric)
-![Stars](https://img.shields.io/github/stars/redadoo/Isometric?style=social)
-![Forks](https://img.shields.io/github/forks/redadoo/Isometric?style=social)
+![Repo Size](https://img.shields.io/github/repo-size/redadoo/IsometricEditor)
+![Contributors](https://img.shields.io/github/contributors/redadoo/IsometricEditor)
+![Stars](https://img.shields.io/github/stars/redadoo/IsometricEditor?style=social)
+![Forks](https://img.shields.io/github/forks/redadoo/IsometricEditor?style=social)
 
 ## 📚 Table of Contents
 
