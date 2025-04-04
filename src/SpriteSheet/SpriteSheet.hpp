@@ -12,6 +12,6 @@ struct SpriteSheet
 	int spriteCount;
 	Texture2D texture;
 
-	void drawSprite(int tileId, float posX, float posY);
+	void drawSprite(int tileId, float posX, float posY) const;
     void init(const char *path, int tileWidth, int tileHeight);
 };
