@@ -6,13 +6,8 @@ MapManager::~MapManager() {}
 
 void MapManager::init(const char *pathMap, int screenWidth)
 {
-	this->screenWidth = screenWidth;
-	this->offset = { static_cast<float>(this->screenWidth / 2), 100 };
-
 	if (pathMap != nullptr)
 		this->map = deserializeMap(pathMap);
-	else 
-		this->map = Map();
 
 	this->gridCellWidth = this->map.tileWidth;
 	this->gridCellHeight = this->map.tileHeight / 2;
@@ -99,7 +94,7 @@ Map MapManager::deserializeMap(const char *pathMap)
 	newMap.tileHeight = m["tileheight"].get<int>();
 
 	std::string tileSheetSource = m["tilesets"][0]["source"].get<std::string>();
-	loadTexture("atlas", tileSheetSource.c_str(), newMap.tileWidth, newMap.tileHeight);
+	this->spriteSheet.init(tileSheetSource.c_str(), newMap.tileWidth, newMap.tileHeight);
 
 	for (auto& layerJson : m["layers"]) 
 	{
@@ -116,7 +111,7 @@ Map MapManager::deserializeMap(const char *pathMap)
 			for (size_t row = 0; row < rowCount; ++row)
 			{
 				std::vector<Tile> rowTiles;
-				
+
 				for (size_t col = 0; col < colCount; ++col)
 				{
 					Tile tile;
@@ -127,51 +122,28 @@ Map MapManager::deserializeMap(const char *pathMap)
 				layer.tiles.push_back(rowTiles);
 			}
 		}
-		
 		newMap.layers.push_back(layer);
 	}
 
 	return newMap;
 }
 
-void MapManager::loadTexture(const char *key, const char *path, int tileWidth, int tileHeight)
+void MapManager::draw(Vector2 mousePos)
 {
-	Image spriteImage = LoadImage(path);
-	if (spriteImage.data != NULL)
-	{
-		Texture2D sprite = LoadTextureFromImage(spriteImage);
-		UnloadImage(spriteImage); 
-		spriteSheet.texture = sprite;
-		spriteSheet.sizeX = spriteImage.width / tileWidth;
-		spriteSheet.sizeY = spriteImage.height / tileHeight;
-	}
-	else
-		std::cout << "error\n" ;
-}
-
-void MapManager::draw()
-{
-	Vector2 mousePos = GetMousePosition();
-	int offSet = map.tileHeight / 2; 
-
 	for (size_t layerIndex = 0; layerIndex < map.layers.size(); ++layerIndex)
 	{
 		for (int row = 0; row < this->map.height; row++)
 		{
 			for (int col = 0; col < this->map.width; col++)
 			{
-				
-				float x = (col - row) * (gridCellWidth / 2.0f) + offset.x;
-				float y = (col + row) * (gridCellHeight / 2.0f) + offset.y;
+				float x = (col - row) * (gridCellWidth / 2.0f);
+				float y = (col + row) * (gridCellHeight / 2.0f);
 				
 				if (layerIndex == 0)
-					this->drawGrid(mousePos, row, col, x, y);
-
-				this->spriteSheet.drawSprite(
-					map.layers[layerIndex].tiles[row][col],
-					x - offSet, 
-					y - offSet
-				);
+					this->drawGrid(mousePos, row, col, x + gridCellWidth / 2, y + gridCellHeight / 2 );
+				
+				const Tile* tile = this->map.getTile(row,col,layerIndex);
+				this->spriteSheet.drawSprite(tile->id, x, y);
 			}
 		}
 	}
@@ -189,24 +161,36 @@ void MapManager::drawGrid(Vector2 mousePos, int row, int col, float x, float y)
 	DrawLineV(bottom, left, BLACK);
 	DrawLineV(left, top, BLACK);
 
-	if (false)
+	if (true)
 	{
 		DrawTriangle(right, top, bottom, RED);
 		DrawTriangle(left, bottom, top, RED);
 	}
 }
 
-void SpriteSheet::drawSprite(const Tile& tile, float posX, float posY)
+Tile* Map::getTile(int row, int col, int layerId)
 {
-	int tileIndex = tile.id - 1; 
-	if (tileIndex < 0)
-		return;
-		
-	int tileSpritecol = tileIndex % sizeX;
-	int tileSpriterow = tileIndex / sizeY;
-	float y = tileSpriterow * 32;
-	float x = tileSpritecol * 32;
-	Rectangle rec = { x, y, 32, 32 };
-	DrawTextureRec(this->texture, rec, {posX, posY}, WHITE);
-}
+    if (layerId < 0 || layerId >= static_cast<int>(layers.size()))
+    {
+        std::cerr << "Error: Layer ID " << layerId << " is out of bounds." << std::endl;
+        return nullptr;
+    }
 
+    MapLayer& layer = layers[layerId];
+
+    if (row < 0 || row >= static_cast<int>(layer.tiles.size()))
+    {
+        std::cerr << "Error: Row " << row << " is out of bounds." << std::endl;
+        return nullptr;
+    }
+
+    std::vector<Tile>& tileRow = layer.tiles[row];
+
+    if (col < 0 || col >= static_cast<int>(tileRow.size()))
+    {
+        std::cerr << "Error: Column " << col << " is out of bounds.\n" << "the tileRow.size() is " << tileRow.size() << std::endl;
+        return nullptr;
+    }
+
+    return &tileRow[col];
+}

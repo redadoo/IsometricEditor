@@ -1,7 +1,6 @@
-#include "raylib.h"
+#include "SpriteSheet.hpp"
 #include <vector>
 #include <map>
-#include <string>
 #include <iostream>
 #include <nlohmann/json.hpp>
 #include <fstream>
@@ -11,7 +10,6 @@ struct Tile
 {
     int id;
     int textureId;
-	Vector2 pos;
 };
 
 struct MapLayer 
@@ -26,30 +24,18 @@ struct Map
     int height;
     int tileWidth;
     int tileHeight;
+
     std::vector<MapLayer> layers;
-};
-
-struct SpriteSheet
-{
-	int sizeX = 1;
-	int sizeY = 1;
-
-	int tileWidth;
-    int tileHeight;
-	Texture2D texture;
-
-	void drawSprite(const Tile& tile, float posX, float posY);
+	Tile* getTile(int row, int col, int layerId);
 };
 
 class MapManager
 {
 private:
-	Vector2 offset;
-	int screenWidth;
 	int gridCellWidth;
 	int gridCellHeight;
 	SpriteSheet spriteSheet;
-	
+
 	void serializeMap();
 	Map deserializeMap(const char *pathMap);
 	void drawGrid(Vector2 mousePos, int row, int col, float x, float y);
@@ -59,7 +45,7 @@ public:
 	Map map;
 	
 	void init(const char *pathMap, int screenWidth);
-	void draw();
+	void draw(Vector2 mousePos);
 
 	MapManager();
 	~MapManager();

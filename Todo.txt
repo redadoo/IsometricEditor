@@ -1,0 +1,6 @@
+fix sprite toolbar
+create layer for gui/map
+change MapLayer to vector of vector to vector
+fix back button
+add strument toolbar
+refactoring 

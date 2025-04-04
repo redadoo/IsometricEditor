@@ -8,9 +8,9 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 include_directories(
     ${CMAKE_SOURCE_DIR}/src
-    ${CMAKE_SOURCE_DIR}/src/Game
+    ${CMAKE_SOURCE_DIR}/src/Editor
     ${CMAKE_SOURCE_DIR}/src/MapManager
-    ${CMAKE_SOURCE_DIR}/src/Gui
+    ${CMAKE_SOURCE_DIR}/src/SpriteSheet
     ${CMAKE_SOURCE_DIR}/src/raygui
 )
 

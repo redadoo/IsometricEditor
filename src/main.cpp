@@ -1,7 +1,7 @@
-#include "Game.hpp"
+#include "Editor.hpp"
 
 int main() 
 {
-    Game game;
-    game.run();
+    Editor editor;
+    editor.run();
 }
