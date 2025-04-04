@@ -8,7 +8,7 @@
 #include "MapManager.hpp"
 
 /**
- * @brief Enumeration for the different GUI sections.
+ * @brief Enumeration for the different GUI state.
  */
 enum class EditorState { MAIN_MENU, SEARCH_MAP_PATH, MAP_EDITOR };
 
